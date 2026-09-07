@@ -1,10 +1,13 @@
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
+import AjvModule from 'ajv';
+import addFormatsModule from 'ajv-formats';
 import { chromium, type Page } from '@playwright/test';
 import { readdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import type { Tutorial, TutorialStep } from '../src/types.js';
+
+const Ajv = ((AjvModule as unknown as { default?: new (options?: unknown) => any }).default ?? AjvModule) as unknown as new (options?: unknown) => any;
+const addFormats = ((addFormatsModule as unknown as { default?: (ajv: any) => void }).default ?? addFormatsModule) as unknown as (ajv: any) => void;
 
 async function collectTutorials(dir: string): Promise<string[]> {
   const entries = await readdir(dir, { withFileTypes: true });
@@ -29,7 +32,7 @@ function targetLocator(page: Page, step: TutorialStep) {
 const schema = JSON.parse(await readFile(path.resolve('schemas/tutorial.schema.json'), 'utf8'));
 const ajv = new Ajv({ allErrors: true, strict: false });
 addFormats(ajv);
-const validate = ajv.compile(schema);
+const validate = ajv.compile(schema) as ((data: unknown) => boolean) & { errors?: unknown };
 const files = await collectTutorials(path.resolve('tutorials'));
 
 if (!files.length) throw new Error('Nenhum tutorial.json encontrado.');
