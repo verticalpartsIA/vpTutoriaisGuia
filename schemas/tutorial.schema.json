@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://verticalparts.local/schemas/tutorial.schema.json",
+  "title": "VP Tutorial",
+  "type": "object",
+  "required": ["id", "title", "app", "route", "version", "steps"],
+  "properties": {
+    "id": { "type": "string" },
+    "title": { "type": "string" },
+    "description": { "type": "string" },
+    "app": { "type": "string" },
+    "route": { "type": "string" },
+    "version": { "type": "string" },
+    "updatedAt": { "type": "string", "format": "date-time" },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "action", "target"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "body": { "type": "string" },
+          "action": {
+            "type": "string",
+            "enum": ["click", "input", "select", "navigate", "observe", "submit"]
+          },
+          "target": {
+            "type": "object",
+            "properties": {
+              "selector": { "type": "string" },
+              "text": { "type": "string" },
+              "role": { "type": "string" },
+              "testId": { "type": "string" }
+            },
+            "additionalProperties": false
+          },
+          "screenshot": { "type": "string" },
+          "expected": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
