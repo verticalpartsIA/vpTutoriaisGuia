@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "record": "tsx scripts/record.ts",
+    "record:scripted": "tsx scripts/record-scripted.ts",
     "enrich": "tsx scripts/enrich.ts",
+    "export:gif": "tsx scripts/export-gif.ts",
     "validate:tutorials": "tsx scripts/validate.ts",
     "typecheck": "tsc --noEmit",
     "test": "npm run typecheck && npm run validate:tutorials"
@@ -15,8 +17,10 @@
     "@playwright/test": "^1.55.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
+    "gifenc": "^1.0.3",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@types/node": "^24.3.1",

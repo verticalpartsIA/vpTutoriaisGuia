@@ -21,6 +21,8 @@ export interface TutorialStep {
   target: TutorialTarget;
   screenshot?: string;
   expected?: string;
+  /** Por que esse campo/botão/tela existe — o motivo de negócio, não só o "como usar". */
+  why?: string;
 }
 
 export interface Tutorial {

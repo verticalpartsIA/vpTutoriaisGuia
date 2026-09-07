@@ -83,6 +83,11 @@ export function TutorialPlayer({ tutorial, open = true, onClose, onComplete, onS
       <div style={{ marginTop: 12, fontSize: 13, opacity: 0.7 }}>{progress}</div>
       <h3 style={{ marginBottom: 8 }}>{step.title}</h3>
       {step.body ? <p style={{ lineHeight: 1.5 }}>{step.body}</p> : null}
+      {step.why ? (
+        <p style={{ fontSize: 13, background: '#f6f6f6', borderRadius: 8, padding: '8px 10px' }}>
+          <strong>Por que isso existe:</strong> {step.why}
+        </p>
+      ) : null}
       {step.expected ? <p style={{ fontSize: 13 }}><strong>Resultado esperado:</strong> {step.expected}</p> : null}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 18, gap: 8 }}>
         <button type="button" disabled={index === 0} onClick={() => setIndex((value) => Math.max(0, value - 1))} style={buttonStyle}>Anterior</button>

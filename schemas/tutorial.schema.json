@@ -37,7 +37,8 @@
             "additionalProperties": false
           },
           "screenshot": { "type": "string" },
-          "expected": { "type": "string" }
+          "expected": { "type": "string" },
+          "why": { "type": "string" }
         },
         "additionalProperties": false
       }

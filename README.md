@@ -86,6 +86,8 @@ npm run record -- https://vpgestaoimportacao.vpsistema.com/comercial/leads novo-
 
 Abre um Chromium visível. Navegue normalmente e execute o processo que quer ensinar. Saída em `captures/novo-lead/{events.json, screenshots/}`. Perfil persistente em `.vp-guide-profile/` (não commitado) reaproveita login local entre gravações.
 
+**Sem humano disponível (ex.: um agente gravando sozinho)?** Use `npm run record:scripted -- acoes.json novo-lead` com um roteiro `[{ "type": "goto"|"click"|"fill"|"press"|"wait", ... }]` — o Playwright executa as ações e o mesmo recorder injetado captura tudo, gerando o mesmo `events.json`/`screenshots/` de uma gravação humana. Ver `scripts/record-scripted.ts` para o formato completo de cada tipo de ação.
+
 ## 2. Enriquecer com Claude
 
 ```bash
@@ -97,6 +99,8 @@ npm run enrich -- novo-lead
 ```
 
 Sem `ANTHROPIC_API_KEY`, cai no fallback determinístico (títulos genéricos a partir da própria ação capturada — continua funcional, só menos redigido). Resultado em `captures/novo-lead/tutorial.generated.json`.
+
+Além de reescrever `title`/`body`/`expected`, o Claude também preenche `why` em passos relevantes (campo/botão) — o **motivo de negócio** daquele elemento existir, não só "como preencher". Quando não há confiança sobre o motivo real, o campo fica de fora em vez de inventado (instrução explícita no prompt em `scripts/enrich.ts`) — revise mesmo assim antes de publicar.
 
 ## 3. Revisar e publicar
 
@@ -138,6 +142,14 @@ O widget é 100% estilos inline (sem CSS externo) para não colidir com o design
 
 O player procura o alvo na ordem `data-testid` → seletor CSS → `role`+texto → texto. Sempre que possível, prefira `data-testid` na hora de gravar — é o mais estável.
 
+## 6. Gerar um GIF (opcional)
+
+```bash
+npm run export:gif -- tutorials/gestao-importacao/comercial/leads/novo-lead
+```
+
+Junta os screenshots do tutorial (na ordem dos passos) num `.gif` animado, útil para anexar num README, Slack ou material de onboarding sem precisar abrir o player. Ajustável via `VP_GUIDE_GIF_WIDTH`/`VP_GUIDE_GIF_HEIGHT`/`VP_GUIDE_GIF_DELAY_MS`.
+
 ---
 
 ## Estrutura do repositório
@@ -151,6 +163,7 @@ src/recorder/            script injetado no navegador durante a gravação
 src/shared/              resolveTarget.ts — cascata de resolução de alvo (usada pelo player)
 src/player/              TutorialPlayer (reprodutor) + HelpWidget (botão "?") reutilizáveis em React
 src/types.ts             domínio compartilhado (Tutorial, TutorialStep, TutorialTarget, CapturedEvent)
+types/                   declarações .d.ts para dependências sem tipos próprios (ex.: gifenc)
 tutorials/               tutoriais aprovados e versionados, por sistema/rota
 reports/                 drift-report.json gerado a cada validação (não versionado)
 docs/                    arquitetura e decisões
@@ -165,7 +178,7 @@ O backlog vive nas [Issues](https://github.com/verticalpartsIA/vpTutoriaisGuia/i
 - Suporte a `storageState` autenticado na validação ao vivo (elimina falso-positivo de tela de login)
 - Auto-reparo de tutoriais quebrados usando Claude para propor novo seletor + abrir PR
 - Isolamento de estilo do widget via Shadow DOM
-- Exportação multi-formato (PDF/HTML/Markdown) inspirada no Pagewalk/Mimik
+- Exportação multi-formato (PDF/HTML/Markdown) inspirada no Pagewalk/Mimik — GIF já implementado (`npm run export:gif`)
 - Redação automática avançada de dados sensíveis no recorder (além de password/hidden)
 - MCP server expondo gravação/validação como tools de agente (inspirado no stepshots)
 - Telemetria central de `onStepUnresolved` (hoje é só um callback — falta um destino padrão)

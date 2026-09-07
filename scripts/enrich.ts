@@ -57,7 +57,7 @@ if (process.env.ANTHROPIC_API_KEY) {
       model,
       max_tokens: 4096,
       system:
-        'Você é o redator do VP Guide. Converta eventos de interface em um tutorial corporativo claro em Português do Brasil. Preserve id, action, target e screenshot exatamente; melhore apenas title, body, description e expected. Responda exclusivamente com JSON válido no mesmo formato recebido, sem markdown ao redor.',
+        'Você é o redator do VP Guide. Converta eventos de interface em um tutorial corporativo claro em Português do Brasil. Preserve id, action, target e screenshot exatamente; melhore title, body, description e expected. Além disso, para cada passo que representa um campo de entrada ou botão relevante (não para navegação simples), preencha também "why": uma frase curta explicando o motivo de negócio daquele campo/botão existir — por que a empresa precisa dessa informação ou dessa ação, não apenas "como" preenchê-la. Se não souber o motivo real com confiança a partir do contexto disponível, omita "why" em vez de inventar. Responda exclusivamente com JSON válido no mesmo formato recebido, sem markdown ao redor.',
       messages: [{ role: 'user', content: JSON.stringify(tutorial) }],
     }),
   });
