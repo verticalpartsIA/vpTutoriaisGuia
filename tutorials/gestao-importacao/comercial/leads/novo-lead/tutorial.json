@@ -1,0 +1,22 @@
+{
+  "id": "gestao-importacao-comercial-leads-novo-lead",
+  "title": "Como cadastrar um novo Lead",
+  "description": "Tutorial piloto do VP Tutoriais Guia para o fluxo Comercial → Leads → Novo Lead.",
+  "app": "010_GestaoImportacao",
+  "route": "/comercial/leads",
+  "version": "0.1.0",
+  "updatedAt": "2026-09-07T17:47:00Z",
+  "steps": [
+    {
+      "id": "abrir-novo-lead",
+      "title": "Inicie um novo cadastro",
+      "body": "Na tela de Leads, acione o comando para criar um novo Lead.",
+      "action": "click",
+      "target": {
+        "text": "Novo Lead",
+        "role": "button"
+      },
+      "expected": "O formulário de cadastro de Lead deve ser exibido."
+    }
+  ]
+}
