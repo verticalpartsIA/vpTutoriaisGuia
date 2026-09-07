@@ -20,7 +20,7 @@ const events = JSON.parse(await readFile(eventsPath, 'utf8')) as CapturedEvent[]
 const deterministicSteps: TutorialStep[] = events.map((event, index) => ({
   id: `step-${String(index + 1).padStart(3, '0')}`,
   title: event.action === 'navigate' ? 'Navegue para a próxima tela' : `Execute: ${event.target.text ?? event.action}`,
-  body: event.value && event.value !== '[REDACTED]' ? `Informe o valor necessário neste campo.` : undefined,
+  body: event.value && event.value !== '[REDACTED]' ? 'Informe o valor necessário neste campo.' : undefined,
   action: event.action,
   target: event.target,
   screenshot: event.screenshot,
@@ -37,7 +37,7 @@ const route = (() => {
 let tutorial: Tutorial = {
   id: slug,
   title,
-  description: `Tutorial gerado a partir de uma captura do VP Guide.`,
+  description: 'Tutorial gerado a partir de uma captura do VP Guide.',
   app,
   route,
   version: '0.1.0',
@@ -77,9 +77,16 @@ if (process.env.OPENAI_API_KEY) {
     throw new Error(`OpenAI API falhou: ${response.status} ${await response.text()}`);
   }
 
-  const payload = (await response.json()) as { output_text?: string };
-  if (!payload.output_text) throw new Error('OpenAI API não retornou output_text.');
-  tutorial = JSON.parse(payload.output_text) as Tutorial;
+  const payload = (await response.json()) as {
+    output?: Array<{ content?: Array<{ type?: string; text?: string }> }>;
+  };
+  const outputText = payload.output
+    ?.flatMap((item) => item.content ?? [])
+    .find((item) => item.type === 'output_text' && typeof item.text === 'string')
+    ?.text;
+
+  if (!outputText) throw new Error('OpenAI API não retornou conteúdo textual utilizável.');
+  tutorial = JSON.parse(outputText) as Tutorial;
 }
 
 const outputPath = path.join(captureDir, 'tutorial.generated.json');
