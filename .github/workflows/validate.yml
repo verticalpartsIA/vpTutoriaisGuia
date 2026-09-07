@@ -4,6 +4,16 @@ on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    # Roda a validação live todo dia às 09:00 UTC, mesmo sem nenhum push —
+    # os sites VerticalParts mudam independentemente deste repositório, então
+    # o drift precisa ser detectado por tempo, não só por commit.
+    - cron: '0 9 * * *'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  issues: write
 
 jobs:
   validate:
@@ -19,6 +29,9 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: Typecheck
         id: typecheck
@@ -42,5 +55,51 @@ jobs:
         if: steps.typecheck.outputs.exit_code != '0'
         run: exit 1
 
-      - name: Validate tutorial schemas
-        run: npm run validate:tutorials
+      - name: Validate tutorial schemas + drift live
+        id: validate
+        shell: bash
+        run: |
+          set +e
+          npm run validate:tutorials > validate.log 2>&1
+          code=$?
+          cat validate.log
+          echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Upload drift report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-report
+          path: reports/drift-report.json
+
+      - name: Abrir/atualizar issue de drift
+        if: steps.validate.outputs.exit_code != '0' && github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          BODY_FILE=$(mktemp)
+          {
+            echo "A validação automática de tutoriais (\`npm run validate:tutorials\`) encontrou passos que não batem mais com a tela real, ou tutoriais com schema inválido."
+            echo
+            echo "Rodou em: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo "Workflow: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            echo '```'
+            cat validate.log
+            echo '```'
+            echo
+            echo "> Nota: a checagem live abre a rota sem autenticação — se o sistema exige login, um passo pode aparecer como \"ausente\" só por causa da tela de login, não por mudança real de UI. Ver issue de suporte a \`storageState\` autenticado."
+          } > "$BODY_FILE"
+
+          existing=$(gh issue list --search "Drift de tutoriais detectado in:title" --state open --json number --jq '.[0].number' || true)
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file "$BODY_FILE"
+          else
+            gh issue create --title "Drift de tutoriais detectado" --label "drift" --body-file "$BODY_FILE"
+          fi
+
+      - name: Fail on validate error
+        if: steps.validate.outputs.exit_code != '0'
+        run: exit 1

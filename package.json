@@ -1,6 +1,7 @@
 {
   "name": "@verticalparts/vp-tutoriais-guia",
-  "version": "0.1.0",
+  "version": "0.2.0",
+  "description": "Tutoriais interativos e vivos para os sistemas VerticalParts: grava fluxos reais, enriquece com Claude, reproduz com um widget \"?\" embutível e se autodetecta quando a tela muda.",
   "private": true,
   "type": "module",
   "scripts": {

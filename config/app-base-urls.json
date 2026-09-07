@@ -1,0 +1,5 @@
+{
+  "_comment": "Mapa app -> URL base de produção, usado por scripts/validate.ts para checar se os seletores dos tutoriais ainda existem na tela real. Adicione uma linha por sistema VerticalParts conforme forem ganhando tutoriais. Fonte: README deste repo e 01_LOGINS_HUMANOS.md (painel de acessos mantido pelo time).",
+  "010_GestaoImportacao": "https://vpgestaoimportacao.vpsistema.com",
+  "09_VP_Sistema_Portal": "https://vpsistema.com"
+}

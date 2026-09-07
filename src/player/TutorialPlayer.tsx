@@ -1,56 +1,48 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { Tutorial, TutorialStep } from '../types.js';
+import { resolveTarget } from '../shared/resolveTarget.js';
 
 export interface TutorialPlayerProps {
   tutorial: Tutorial;
   open?: boolean;
   onClose?: () => void;
   onComplete?: () => void;
+  /**
+   * Chamado quando o passo atual não encontra nenhum elemento correspondente
+   * no DOM real — sinal de que a tela mudou e o tutorial precisa ser
+   * revisado/regravado. Use isso para registrar telemetria de drift em
+   * produção (ex.: gravar em uma tabela Supabase `tutorial_drift_events`).
+   */
+  onStepUnresolved?: (tutorial: Tutorial, step: TutorialStep) => void;
 }
 
-function resolveTarget(step: TutorialStep): Element | null {
-  const { target } = step;
-  if (target.testId) {
-    const byTestId = document.querySelector(`[data-testid="${CSS.escape(target.testId)}"]`);
-    if (byTestId) return byTestId;
-  }
-  if (target.selector) {
-    try {
-      const bySelector = document.querySelector(target.selector);
-      if (bySelector) return bySelector;
-    } catch {
-      // selector inválido: seguimos para fallback textual
-    }
-  }
-  if (target.text) {
-    const candidates = Array.from(document.querySelectorAll('button,a,[role="button"],label,input,select,textarea'));
-    return candidates.find((element) => (element.textContent ?? '').trim().includes(target.text!)) ?? null;
-  }
-  return null;
-}
-
-export function TutorialPlayer({ tutorial, open = true, onClose, onComplete }: TutorialPlayerProps) {
+export function TutorialPlayer({ tutorial, open = true, onClose, onComplete, onStepUnresolved }: TutorialPlayerProps) {
   const [index, setIndex] = useState(0);
   const step = tutorial.steps[index];
   const progress = useMemo(() => `${index + 1} de ${tutorial.steps.length}`, [index, tutorial.steps.length]);
 
   useEffect(() => {
     if (!open || !step) return;
-    const target = resolveTarget(step);
-    if (!(target instanceof HTMLElement)) return;
+    if (Object.keys(step.target).length === 0) return;
 
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    const previousOutline = target.style.outline;
-    const previousOutlineOffset = target.style.outlineOffset;
-    target.style.outline = '4px solid currentColor';
-    target.style.outlineOffset = '4px';
+    const { element, strategy } = resolveTarget(document, step.target);
+    if (strategy === 'none' || !(element instanceof HTMLElement)) {
+      onStepUnresolved?.(tutorial, step);
+      return;
+    }
+
+    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    const previousOutline = element.style.outline;
+    const previousOutlineOffset = element.style.outlineOffset;
+    element.style.outline = '4px solid currentColor';
+    element.style.outlineOffset = '4px';
 
     return () => {
-      target.style.outline = previousOutline;
-      target.style.outlineOffset = previousOutlineOffset;
+      element.style.outline = previousOutline;
+      element.style.outlineOffset = previousOutlineOffset;
     };
-  }, [open, step]);
+  }, [open, step, tutorial, onStepUnresolved]);
 
   if (!open || !step) return null;
 
